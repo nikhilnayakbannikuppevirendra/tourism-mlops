@@ -3,20 +3,19 @@ name: Tourism Wellness MLOps Pipeline
 on:
   push:
     branches:
-      - main   # Automatically triggers on push to the main branch
+      - main
 
 jobs:
 
-  # ── Job 1: Register Dataset ──────────────────────────────
   register-dataset:
     name: Register Dataset on Hugging Face
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4        # ← upgraded from v3
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5   # ← upgraded from v4
         with:
           python-version: "3.9"
 
@@ -28,17 +27,16 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python tourism_project/model_building/data_register.py
 
-  # ── Job 2: Data Preparation ───────────────────────────────
   data-prep:
     name: Clean & Split Data
     needs: register-dataset
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
@@ -50,17 +48,16 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python tourism_project/model_building/prep.py
 
-  # ── Job 3: Model Training & Registration ──────────────────
   model-training:
     name: Train, Tune & Register Model
     needs: data-prep
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
@@ -70,24 +67,23 @@ jobs:
       - name: Start MLflow Tracking Server
         run: |
           nohup mlflow ui --host 0.0.0.0 --port 5000 &
-          sleep 5   # Wait for server to initialise
+          sleep 5
 
       - name: Train & Register Best Model
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python tourism_project/model_building/train.py
 
-  # ── Job 4: Deploy to Hugging Face Space ───────────────────
   deploy-hosting:
     name: Deploy Streamlit App to Hugging Face
     needs: [register-dataset, data-prep, model-training]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 

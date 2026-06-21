@@ -1,7 +1,4 @@
-# ─────────────────────────────────────────────────────────────
-# requirements.txt (GitHub Actions Workflow)
-# Installed at the runner level for all pipeline jobs
-# ─────────────────────────────────────────────────────────────
+
 huggingface_hub==0.32.6
 datasets==3.6.0
 pandas==2.2.2

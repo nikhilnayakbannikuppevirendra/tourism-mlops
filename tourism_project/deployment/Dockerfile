@@ -1,8 +1,4 @@
-# ─────────────────────────────────────────────────────────────
-# Dockerfile
-# Base image: Python 3.9 slim
-# Runs a Streamlit app for tourism package purchase prediction
-# ─────────────────────────────────────────────────────────────
+
 
 FROM python:3.9
 

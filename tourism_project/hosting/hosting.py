@@ -1,7 +1,7 @@
-# ─────────────────────────────────────────────────────────────
+
 # hosting.py
 # Purpose: Push deployment files to Hugging Face Space
-# ─────────────────────────────────────────────────────────────
+
 
 from huggingface_hub import HfApi
 import os
@@ -17,4 +17,4 @@ api.upload_folder(
     repo_type="space",
     path_in_repo="",
 )
-print(f"🚀 Deployment files uploaded to: https://huggingface.co/spaces/{SPACE_REPO}")
+print(f" Deployment files uploaded to: https://huggingface.co/spaces/{SPACE_REPO}")

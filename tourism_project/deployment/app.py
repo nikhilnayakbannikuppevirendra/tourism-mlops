@@ -1,25 +1,24 @@
-# ─────────────────────────────────────────────────────────────
 # app.py
 # Purpose: Streamlit frontend for Wellness Tourism Package
 #          Purchase Prediction – deployed on Hugging Face Spaces
-# ─────────────────────────────────────────────────────────────
+
 
 import streamlit as st
 import pandas as pd
 from huggingface_hub import hf_hub_download
 import joblib
 
-# ── Page Configuration ────────────────────────────────────────
+# ── Page Configuration 
 st.set_page_config(
     page_title="Tourism Package Predictor",
-    page_icon="✈️",
+    page_icon="",
     layout="centered"
 )
 
-# ── Load Model from Hugging Face Model Hub ────────────────────
+# ── Load Model from Hugging Face Model Hub 
 @st.cache_resource
 def load_model():
-    HF_USERNAME = "nikhilnayakbv"   # ← Replace with your HF username
+    HF_USERNAME = "nikhilnayakbv"
     model_path = hf_hub_download(
         repo_id=f"{HF_USERNAME}/tourism-wellness-model",
         filename="best_tourism_model_v1.joblib"
@@ -28,8 +27,8 @@ def load_model():
 
 model = load_model()
 
-# ── App Header ────────────────────────────────────────────────
-st.title("✈️ Wellness Tourism Package Purchase Predictor")
+# ── App Header 
+st.title(" Wellness Tourism Package Purchase Predictor")
 st.markdown("""
 This tool helps **Visit with Us** marketing teams identify customers who are likely to purchase the
 new **Wellness Tourism Package** before reaching out, enabling targeted and efficient campaigns.
@@ -38,7 +37,7 @@ new **Wellness Tourism Package** before reaching out, enabling targeted and effi
 """)
 st.divider()
 
-# ── Input Form ────────────────────────────────────────────────
+# ── Input Form 
 st.subheader("👤 Customer Details")
 
 col1, col2 = st.columns(2)
@@ -83,7 +82,7 @@ with col4:
     Passport = st.selectbox("Holds a Passport?", ["Yes", "No"])
     OwnCar = st.selectbox("Owns a Car?", ["Yes", "No"])
 
-# ── Build Input DataFrame ─────────────────────────────────────
+# ── Build Input DataFrame 
 input_data = pd.DataFrame([{
     "Age":                       Age,
     "CityTier":                  CityTier,
@@ -105,7 +104,7 @@ input_data = pd.DataFrame([{
     "Designation":               Designation,
 }])
 
-# ── Predict ───────────────────────────────────────────────────
+# ── Predict 
 CLASSIFICATION_THRESHOLD = 0.45
 
 st.divider()
@@ -114,13 +113,13 @@ if st.button("🔍 Predict Purchase Likelihood", type="primary", use_container_w
     prediction = int(proba >= CLASSIFICATION_THRESHOLD)
 
     if prediction == 1:
-        st.success(f"✅ **This customer is LIKELY to purchase the Wellness Tourism Package.**")
+        st.success(f" **This customer is LIKELY to purchase the Wellness Tourism Package.**")
         st.metric("Purchase Probability", f"{proba * 100:.1f}%")
-        st.info("💡 Recommendation: Prioritise this customer in the marketing campaign.")
+        st.info(" Recommendation: Prioritise this customer in the marketing campaign.")
     else:
-        st.warning(f"❌ **This customer is UNLIKELY to purchase the Wellness Tourism Package.**")
+        st.warning(f" **This customer is UNLIKELY to purchase the Wellness Tourism Package.**")
         st.metric("Purchase Probability", f"{proba * 100:.1f}%")
-        st.info("💡 Recommendation: Consider lower-priority outreach or alternative packages.")
+        st.info(" Recommendation: Consider lower-priority outreach or alternative packages.")
 
 st.divider()
 st.caption("Powered by XGBoost + Streamlit | MLOps Pipeline – Visit with Us")

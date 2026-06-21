@@ -1,8 +1,7 @@
-# ─────────────────────────────────────────────────────────────
 # train.py
 # Purpose: Hyperparameter tuning + MLflow tracking + model
 #          registration on Hugging Face Model Hub (production)
-# ─────────────────────────────────────────────────────────────
+
 
 import pandas as pd
 import numpy as np
@@ -18,27 +17,27 @@ import mlflow
 from huggingface_hub import HfApi, create_repo
 from huggingface_hub.utils import RepositoryNotFoundError
 
-# ── MLflow tracking ───────────────────────────────────────────
+# ── MLflow tracking 
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("tourism-wellness-pipeline")
 
-# ── HF Configuration ──────────────────────────────────────────
-HF_USERNAME   = "nikhilnayakbv"           # ← Replace with your HF username
+# ── HF Configuration 
+HF_USERNAME   = "nikhilnayakbv"
 DATASET_REPO  = f"{HF_USERNAME}/tourism-wellness"
 MODEL_REPO    = f"{HF_USERNAME}/tourism-wellness-model"
 MODEL_FILE    = "best_tourism_model_v1.joblib"
 
 api = HfApi(token=os.getenv("HF_TOKEN"))
 
-# ── Load train/test from Hugging Face ────────────────────────
-print("📥 Loading train/test data from Hugging Face ...")
+# ── Load train/test from Hugging Face 
+print(" Loading train/test data from Hugging Face ...")
 Xtrain = pd.read_csv(f"hf://datasets/{DATASET_REPO}/Xtrain.csv")
 Xtest  = pd.read_csv(f"hf://datasets/{DATASET_REPO}/Xtest.csv")
 ytrain = pd.read_csv(f"hf://datasets/{DATASET_REPO}/ytrain.csv").squeeze()
 ytest  = pd.read_csv(f"hf://datasets/{DATASET_REPO}/ytest.csv").squeeze()
 print(f"   Train: {Xtrain.shape} | Test: {Xtest.shape}")
 
-# ── Feature definitions ───────────────────────────────────────
+# ── Feature definitions 
 NUMERIC_FEATURES = [
     "Age", "CityTier", "DurationOfPitch", "NumberOfPersonVisiting",
     "NumberOfFollowups", "PreferredPropertyStar", "NumberOfTrips",
@@ -50,10 +49,10 @@ CATEGORICAL_FEATURES = [
     "MaritalStatus", "Designation"
 ]
 
-# ── Class weight for imbalance ────────────────────────────────
+# ── Class weight for imbalance 
 class_weight = ytrain.value_counts()[0] / ytrain.value_counts()[1]
 
-# ── Preprocessing + model pipeline ───────────────────────────
+# ── Preprocessing + model pipeline 
 preprocessor = make_column_transformer(
     (StandardScaler(), NUMERIC_FEATURES),
     (OneHotEncoder(handle_unknown="ignore", sparse_output=False), CATEGORICAL_FEATURES)
@@ -66,7 +65,7 @@ xgb_model = xgb.XGBClassifier(
 )
 model_pipeline = make_pipeline(preprocessor, xgb_model)
 
-# ── Full hyperparameter grid (production) ─────────────────────
+# ── Full hyperparameter grid (production) 
 param_grid = {
     "xgbclassifier__n_estimators":       [50, 75, 100, 125],
     "xgbclassifier__max_depth":          [2, 3, 4],
@@ -78,7 +77,7 @@ param_grid = {
 
 CLASSIFICATION_THRESHOLD = 0.45
 
-# ── MLflow run ────────────────────────────────────────────────
+# ── MLflow run 
 with mlflow.start_run(run_name="production_grid_search"):
 
     grid_search = GridSearchCV(
@@ -117,22 +116,22 @@ with mlflow.start_run(run_name="production_grid_search"):
         "test_f1":         test_rep["1"]["f1-score"],
     })
 
-    print("\n🏆 Best Parameters:", grid_search.best_params_)
-    print("\n📊 Test Classification Report:")
+    print("\ Best Parameters:", grid_search.best_params_)
+    print("\ Test Classification Report:")
     print(classification_report(ytest, y_pred_test))
 
-    # ── Save model locally ────────────────────────────────────
+    # ── Save model locally 
     joblib.dump(best_model, MODEL_FILE)
     mlflow.log_artifact(MODEL_FILE, artifact_path="model")
-    print(f"\n💾 Model saved as: {MODEL_FILE}")
+    print(f"\n Model saved as: {MODEL_FILE}")
 
-    # ── Register on Hugging Face Model Hub ───────────────────
+    # ── Register on Hugging Face Model Hub 
     try:
         api.repo_info(repo_id=MODEL_REPO, repo_type="model")
-        print(f"✅ Model repo '{MODEL_REPO}' already exists.")
+        print(f" Model repo '{MODEL_REPO}' already exists.")
     except RepositoryNotFoundError:
         create_repo(repo_id=MODEL_REPO, repo_type="model", private=False)
-        print(f"✅ Model repo '{MODEL_REPO}' created.")
+        print(f" Model repo '{MODEL_REPO}' created.")
 
     api.upload_file(
         path_or_fileobj=MODEL_FILE,
@@ -140,4 +139,4 @@ with mlflow.start_run(run_name="production_grid_search"):
         repo_id=MODEL_REPO,
         repo_type="model",
     )
-    print(f"🚀 Model registered at: https://huggingface.co/{MODEL_REPO}")
+    print(f" Model registered at: https://huggingface.co/{MODEL_REPO}")

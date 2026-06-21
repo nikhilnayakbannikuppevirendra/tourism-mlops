@@ -1,19 +1,14 @@
-# ─────────────────────────────────────────────────────────────
-# pipeline.yml
-# CI/CD Pipeline for Tourism Wellness Package Prediction
-# Triggered: on every push to the main branch
-# ─────────────────────────────────────────────────────────────
 
 name: Tourism Wellness MLOps Pipeline
 
 on:
   push:
     branches:
-      - main   # Automatically triggers on push to the main branch
+      - main
 
 jobs:
 
-  # ── Job 1: Register Dataset ──────────────────────────────
+  # ── Job 1: Register Dataset 
   register-dataset:
     name: Register Dataset on Hugging Face
     runs-on: ubuntu-latest
@@ -34,7 +29,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python tourism_project/model_building/data_register.py
 
-  # ── Job 2: Data Preparation ───────────────────────────────
+  # ── Job 2: Data Preparation 
   data-prep:
     name: Clean & Split Data
     needs: register-dataset
@@ -56,7 +51,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python tourism_project/model_building/prep.py
 
-  # ── Job 3: Model Training & Registration ──────────────────
+  # ── Job 3: Model Training & Registration 
   model-training:
     name: Train, Tune & Register Model
     needs: data-prep
@@ -83,7 +78,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python tourism_project/model_building/train.py
 
-  # ── Job 4: Deploy to Hugging Face Space ───────────────────
+  # ── Job 4: Deploy to Hugging Face Space 
   deploy-hosting:
     name: Deploy Streamlit App to Hugging Face
     needs: [register-dataset, data-prep, model-training]
